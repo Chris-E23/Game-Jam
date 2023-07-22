@@ -12,8 +12,9 @@ public class interactions : MonoBehaviour
     public GameObject player;
     public GameObject interactionScreen;
     public GameObject viewpoint;
-    public GameObject person;
-
+    private GameObject person;
+    public GameObject foodTray;
+    public GameObject hand;
     // Start is called before the first frame update
     void Start()
     {
@@ -38,15 +39,15 @@ public class interactions : MonoBehaviour
 
         if (Physics.Raycast(ray, out RaycastHit hit, 5f))
         {
-
+            if (Input.GetKey(KeyCode.F) && hit.collider.gameObject.tag == "door")
+            {
+                player.transform.position = hit.collider.transform.position + transform.forward * 5 + transform.up * 2;
+                
+            }
             if (hit.collider.gameObject.tag == "door")
             {
                 gameController.instance.doorText.gameObject.SetActive(true);
-                if (Input.GetKey(KeyCode.E))
-                {
-                    player.transform.position = hit.collider.transform.position + transform.forward * 5 + transform.up * 2;
-                    
-                }
+               
                
                 
             }
@@ -118,6 +119,11 @@ public class interactions : MonoBehaviour
             {
                     looking(hit, "I oughta kick your butt");
                
+            }
+            else if (Input.GetKey(KeyCode.E) && hit.collider.gameObject.tag == "lunchlady")
+            {
+                looking(hit, "Here's your food!");
+                Instantiate(foodTray, hand.transform.position, hand.transform.rotation);
             }
 
 

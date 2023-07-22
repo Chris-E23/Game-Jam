@@ -25,15 +25,16 @@ public class PlayerController : MonoBehaviour
 
     void Start()
     {
-        Cursor.lockState = CursorLockMode.Locked;
+        
        
         cam = Camera.main;
         instance = this; 
     }
 
-    // Update is called once per frame
+   
     void Update()
     {
+        
         mouseInput = new Vector2(Input.GetAxisRaw("Mouse X"), Input.GetAxisRaw("Mouse Y")) * mouseSens;
 
         transform.rotation = Quaternion.Euler(transform.rotation.eulerAngles.x, transform.rotation.eulerAngles.y + mouseInput.x, transform.rotation.eulerAngles.z);

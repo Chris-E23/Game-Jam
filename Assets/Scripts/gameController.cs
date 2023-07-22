@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
-
+using UnityEngine.UI;
 public class gameController : MonoBehaviour
 {
 
@@ -18,6 +18,14 @@ public class gameController : MonoBehaviour
     public GameObject lunch;
     public GameObject classroom;
     public GameObject recess;
+    public TMP_Text timer;
+    public GameObject screen;
+    public float classTime = 120;
+    public float timeRemaining;
+    public Slider parentsatis;
+    public TMP_Text parenttxt;
+    public Slider hungerslider;
+    public TMP_Text hungertxt;
     
     public void Awake()
     {
@@ -31,20 +39,44 @@ public class gameController : MonoBehaviour
 
 
     }
+    public enum days
+    {
+        monday,
+        tuesday,
+        wednesday,
+        thursday,
+        friday
 
+    }
     
     void Start()
     {
         money = 20;
         state = gamestate.classtime;
-        StartCoroutine(MyCouroutine());
-        
+        timeRemaining = classTime;
+        screen.SetActive(true);
 
     }
 
     
     void Update()
     {
+        timer.text = "Time: " + classtime;
+        time();
+        if(timeRemaining == 0)
+        {
+            switch (state)
+            {
+                case gamestate.classtime:
+                    state = gamestate.lunchtime;
+                    timeRemaining = classTime;
+                    break;
+
+
+
+            }
+
+        }
         moneytxt.text = "Money: " + money; 
         if(state == gamestate.classtime)
         {
@@ -54,6 +86,7 @@ public class gameController : MonoBehaviour
         }
         else if(state == gamestate.lunchtime)
         {
+            eventTxt.text = "Lunch Time!!!";
             lunch.gameObject.SetActive(true);
             classroom.gameObject.SetActive(false);
 
@@ -65,13 +98,44 @@ public class gameController : MonoBehaviour
             recess.gameObject.SetActive(true);
         }
 
+        if (screen.activeInHierarchy)
+        {
+            this.gameObject.GetComponent<PlayerController>().enabled = false;
+            Cursor.lockState = CursorLockMode.None;
+            parentsatis.gameObject.SetActive(false);
+            parenttxt.gameObject.SetActive(false);
+            hungerslider.gameObject.SetActive(false);
+            hungertxt.gameObject.SetActive(false);
+        }
+        else
+        {
+            this.gameObject.GetComponent<PlayerController>().enabled = true;
+            parentsatis.gameObject.SetActive(true);
+            parenttxt.gameObject.SetActive(true);
+            hungerslider.gameObject.SetActive(true);
+            hungertxt.gameObject.SetActive(true);
+            StartCoroutine(MyCouroutine());
+            timer.gameObject.SetActive(true);
 
+        }
 
 
     }
     public void addMoney(float moneyamount)
     {
         money += moneyamount;
+
+    }
+    public void time()
+    {
+        timeRemaining -= 1 * Time.deltaTime;
+
+
+    }
+    public void close()
+    {
+
+        screen.SetActive(false);
 
     }
      IEnumerator MyCouroutine()

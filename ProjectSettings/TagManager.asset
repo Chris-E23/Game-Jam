@@ -12,6 +12,7 @@ TagManager:
   - door
   - teacher
   - principal
+  - lunchlady
   layers:
   - Default
   - TransparentFX
