@@ -13,6 +13,7 @@ TagManager:
   - teacher
   - principal
   - lunchlady
+  - trash
   layers:
   - Default
   - TransparentFX

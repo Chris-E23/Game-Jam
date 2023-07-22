@@ -5,8 +5,7 @@ using TMPro;
 
 public class interactions : MonoBehaviour
 {
-    public Transform frontdoorinside;
-    public Transform frontdooroutside;
+   
     private Camera cam;
  
     public GameObject player;
@@ -15,6 +14,7 @@ public class interactions : MonoBehaviour
     private GameObject person;
     public GameObject foodTray;
     public GameObject hand;
+    private bool holding; 
     // Start is called before the first frame update
     void Start()
     {
@@ -26,43 +26,41 @@ public class interactions : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        openDoor();
-        basicInteractions();
-        
-    }
+       
 
-
-    public void openDoor()
-    {
         Ray ray = cam.ViewportPointToRay(new Vector3(.5f, .5f, 0f));
         ray.origin = cam.transform.position;
 
         if (Physics.Raycast(ray, out RaycastHit hit, 5f))
         {
-            if (Input.GetKey(KeyCode.F) && hit.collider.gameObject.tag == "door")
+            if (hit.collider.gameObject.tag == "door")
             {
-                player.transform.position = hit.collider.transform.position + transform.forward * 5 + transform.up * 2;
+
+                if (Input.GetKey(KeyCode.E))
+                {
+
+                    Vector3 teleportPosition = hit.collider.transform.position + hit.collider.transform.forward * 5;
+                    transform.position = teleportPosition;
+
+                }
                 
+
+
+
             }
             if (hit.collider.gameObject.tag == "door")
             {
                 gameController.instance.doorText.gameObject.SetActive(true);
-               
-               
-                
+
+
+
             }
             else
             {
 
                 gameController.instance.doorText.gameObject.SetActive(false);
             }
-            if (hit.collider.gameObject.tag == "money")
-            {
-                Destroy(hit.collider.gameObject);
-                gameController.instance.addMoney(15);
-                StopAllCoroutines();
 
-            }
 
 
 
@@ -74,9 +72,12 @@ public class interactions : MonoBehaviour
 
             gameController.instance.doorText.gameObject.SetActive(false);
         }
-
+        basicInteractions();
+      
 
     }
+
+
 
     public void basicInteractions()
     {
@@ -87,7 +88,7 @@ public class interactions : MonoBehaviour
         RaycastHit hit;
 
 
-        if (Physics.Raycast(ray, out hit, 3f, LayerMask.GetMask("child")))
+        if (Physics.Raycast(ray, out hit, 7f, LayerMask.GetMask("child")))
         {
             if (Input.GetKey(KeyCode.E))
             {
@@ -97,7 +98,7 @@ public class interactions : MonoBehaviour
 
 
         }
-        else if (Physics.Raycast(ray, out hit, 3f))
+        else if (Physics.Raycast(ray, out hit, 7f))
         {
             if (Input.GetKey(KeyCode.E) && hit.collider.gameObject.tag == "principal")
             {
@@ -123,9 +124,20 @@ public class interactions : MonoBehaviour
             else if (Input.GetKey(KeyCode.E) && hit.collider.gameObject.tag == "lunchlady")
             {
                 looking(hit, "Here's your food!");
-                Instantiate(foodTray, hand.transform.position, hand.transform.rotation);
+                Instantiate(foodTray, hand.transform.position, hand.transform.rotation, hand.transform);
+                holding = true;
             }
-
+            else if (Input.GetKey(KeyCode.E) && hit.collider.gameObject.tag == "trash")
+            {
+                Destroy(foodTray);
+                interactionScreen.SetActive(true);
+                gameController.instance.interactiontxt.text = "Throw away your trash";
+                Cursor.lockState = CursorLockMode.None;
+                Camera.main.transform.LookAt(hit.collider.transform);
+                Instantiate(foodTray, hand.transform.position, hand.transform.rotation, hand.transform);
+                holding = false;
+            }
+            
 
         }
 
