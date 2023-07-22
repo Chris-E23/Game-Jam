@@ -144,9 +144,22 @@ public class interacting : MonoBehaviour
         }
         else if (person.tag == "teacher")
         {
-            gameController.instance.bribefield.gameObject.SetActive(true);
-           
-            
+            if (gameController.instance.money < 10)
+            {
+                gameController.instance.interactiontxt.text = "You don't have $10";
+                bribebutton.gameObject.SetActive(false);
+                closebutton.gameObject.SetActive(true);
+
+
+            }
+            else
+            {
+                gameController.instance.currentparentsatisfaction += 10;
+
+
+            }
+
+
 
         }
 
@@ -165,20 +178,7 @@ public class interacting : MonoBehaviour
         }
     }
 
-    public void bribeteacher()
-    {
-        float money = float.Parse(gameController.instance.bribefield.text);
-
-        if (money > gameController.instance.money)
-        {
-            gameController.instance.interactiontxt.text = "You don't even have that kind of money";
-            bribebutton.gameObject.SetActive(false);
-            closebutton.gameObject.SetActive(false);
-
-
-        }
-
-    }
+   
     public void joingang()
     {
         bribebutton.gameObject.SetActive(true);

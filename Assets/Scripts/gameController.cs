@@ -8,43 +8,64 @@ public class gameController : MonoBehaviour
 
     public TMP_Text moneytxt;
     public TMP_Text beginningText;
+    
     public gamestate state = gamestate.classtime;
+    
     public float money; 
     public static gameController instance;
+    
     public TMP_Text interactiontxt;
     public TMP_Text doorText;
     public TMP_Text eventTxt;
+    
     public GameObject lunch;
     public GameObject classroom;
     public GameObject recess;
+    
     public TMP_Text timer;
     public GameObject screen;
+    
     public float classTime = 2;
     public float timeRemaining;
+    
     public Slider parentsatis;
     public TMP_Text parenttxt;
+    
     public Slider hungerslider;
     public TMP_Text hungertxt;
+    
     public GameObject player;
+    
     public GameObject interactionScreen;
+    
     public GameObject viewpoint;
     public TMP_Text moneytheyhave;
+    
     public Transform classteleport;
     public Transform lunchteleport;
     public Transform recessteleport;
+    
     public float parentsatisfactionmax = 100;
     public float currentparentsatisfaction;
-    public TMP_InputField bribefield;
+   
+    
+   
     public float hungermaxvalue;
     public float currenthungervalue;
+    
     int classes = 0;
+    
     public days daystatus;
+    
     public GameObject NPChandler;
+    
+    bool inInteraction;
     public void Awake()
     {
         instance = this;
         daystatus = days.monday;
-        bribefield.gameObject.SetActive(false);
+        
+
     }
     public enum gamestate
     {
@@ -71,7 +92,8 @@ public class gameController : MonoBehaviour
         timeRemaining = classTime;
         screen.SetActive(true);
         parentsatis.maxValue = parentsatisfactionmax;
-        currentparentsatisfaction = parentsatisfactionmax;
+        hungerslider.maxValue = hungermaxvalue; 
+
         
     }
 
@@ -79,7 +101,7 @@ public class gameController : MonoBehaviour
     void Update()
     {
         parentsatis.value = currentparentsatisfaction;
-
+        hungerslider.value = currenthungervalue;
         if(state == gamestate.newday)
         {
 
@@ -137,7 +159,7 @@ public class gameController : MonoBehaviour
 
 
         }
-        if(state == gamestate.classtime || state == gamestate.lunchtime || state == gamestate.recess)
+        if((state == gamestate.classtime || state == gamestate.lunchtime || state == gamestate.recess) && !inInteraction)
         {
             time();
         }
@@ -227,6 +249,7 @@ public class gameController : MonoBehaviour
    
     public void time()
     {
+
         timeRemaining -= 1 * Time.deltaTime;
 
 
@@ -253,8 +276,14 @@ public class gameController : MonoBehaviour
     }
     public void recesstime()
     {
-        interactionScreen.SetActive(true);
-        interactiontxt.text = "It's recess time, your bully is going to go after you to steal your money, last the period in order to keep your money.";
+        if(daystatus == days.monday)
+        {
+            interactionScreen.SetActive(true);
+            interactiontxt.text = "It's recess time, your bully is going to go after you to steal your money, last the period in order to keep your money.";
+
+
+        }
+      
            
 
 
