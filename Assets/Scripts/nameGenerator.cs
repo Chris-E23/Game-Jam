@@ -11,8 +11,13 @@ public class nameGenerator : MonoBehaviour
     public List<NPCStorage> recess = new List<NPCStorage>();
     private  List<string> names = new List<string>();
     private  List<float> money = new List<float>();
-    public TMP_Text nametxt;
-    public gameController player;
+    public nameGenerator instance;
+
+    private void Awake()
+    {
+
+        instance = this;
+    }
     void Start()
     {
         names.Add("Chris");
@@ -64,10 +69,35 @@ public class nameGenerator : MonoBehaviour
                 lunchpeople[i].name = names[i];
                 lunchpeople[i].money = money[i];
 
-            
-           
+                recess[i].name = names[i];
+                recess[i].money = money[i];
+
+
 
         }
+    }
+
+    public void moneychange(string name, float amount)
+    {
+        int index = 0;
+        for(int i = 0; i < names.Count; i++)
+        {
+            if(name == names[i])
+            {
+
+                index = i;
+
+
+            }
+
+
+        }
+
+        money[index] += amount;
+
+
+
+
     }
 
    
