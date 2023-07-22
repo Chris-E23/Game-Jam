@@ -97,14 +97,69 @@ public class PlayerController : MonoBehaviour
         charCon.Move(movement * Time.deltaTime);
 
 
+        openDoor();
 
 
+    }
+    public void openDoor()
+    {
+
+        Ray ray = cam.ViewportPointToRay(new Vector3(.5f, .5f, 0f));
+        ray.origin = cam.transform.position;
+
+        if (Physics.Raycast(ray, out RaycastHit hit, 5f))
+        {
+            if (hit.collider.gameObject.tag == "door")
+            {
+
+                if (Input.GetKey(KeyCode.E))
+                {
+
+                    transform.position = hit.collider.transform.position + transform.forward * 5 + transform.up * 2;
+
+                }
+
+
+
+
+            }
+            if (hit.collider.gameObject.tag == "door")
+            {
+                gameController.instance.doorText.gameObject.SetActive(true);
+
+
+
+            }
+            else
+            {
+
+                gameController.instance.doorText.gameObject.SetActive(false);
+            }
+
+
+
+
+
+
+        }
+        else
+        {
+
+            gameController.instance.doorText.gameObject.SetActive(false);
         }
 
 
 
 
-    
+
+
+
+    }
+
+
+
+
+
 
 
 }
