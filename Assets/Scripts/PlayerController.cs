@@ -6,187 +6,129 @@ using TMPro;
 public class PlayerController : MonoBehaviour
 {
     
-   
-    private Vector2 mouseInput;
-    public float moveSpeed = 5f;
-    private float activeMoveSpeed;
-    private Vector3 moveDir;
-    private Camera cam;
+    public float moveSpeed;
+
+    public float groundDrag;
+
     public float jumpForce;
-    public float jumpcooldown;
-    public float airmultiplier;
+    public float jumpCooldown;
+    public float airMultiplier;
     bool readyToJump;
-    private bool isGrounded;
-    public LayerMask groundLayers;
-    float xRot;
-    float yRot;
-    public Transform orientation;
-    public float playerHeight;
+
+  public float walkSpeed;
+   public float sprintSpeed;
+
    
+    public KeyCode jumpKey = KeyCode.Space;
+
+    
+    public float playerHeight;
+    public LayerMask whatIsGround;
+    bool isGrounded;
+
+    public Transform orientation;
+
     float horizontalInput;
     float verticalInput;
-    
+
+    Vector3 moveDirection;
+
     Rigidbody rb;
-    public float groundDrag;
-    public GameObject player;
 
-
-    void Start()
+    private void Start()
     {
-
-        rb.GetComponent<Rigidbody>();
+        rb = GetComponent<Rigidbody>();
         rb.freezeRotation = true;
-        cam = Camera.main;
+
         readyToJump = true;
-      
     }
 
-
-    void Update()
+    private void Update()
     {
-        isGrounded = Physics.Raycast(transform.position, Vector3.down, playerHeight * 0.5f + 0.4f, groundLayers);
-        
-       
-        //openDoor();
-        myInput();
-        MovePlayer();
 
+        isGrounded = Physics.Raycast(transform.position, Vector3.down, playerHeight * 0.5f + 0.3f, whatIsGround);
+
+        MyInput();
         SpeedControl();
-        if (isGrounded)
-        {
-            rb.drag = groundDrag;
-        }
-        else
-        {
-            rb.drag = 0;
-        }
 
+       
+        if (isGrounded)
+            rb.drag = groundDrag;
+        else
+            rb.drag = 0;
     }
+
     private void FixedUpdate()
     {
         MovePlayer();
     }
-    private void MovePlayer()
-    {
 
-        moveDir = orientation.forward * verticalInput + orientation.right * horizontalInput;
-
-        if (isGrounded)
-            rb.AddForce(moveDir.normalized * moveSpeed * 10f, ForceMode.Force);
-        else if (!isGrounded)
-            rb.AddForce(moveDir.normalized * moveSpeed * 10f * airmultiplier, ForceMode.Force);
-    }
-    public void openDoor()
-    {
-
-        Ray ray = cam.ViewportPointToRay(new Vector3(.5f, .5f, 0f));
-        ray.origin = cam.transform.position;
-
-        if (Physics.Raycast(ray, out RaycastHit hit, 5f))
-        {
-            if (hit.collider.gameObject.tag == "door")
-            {
-
-                if (Input.GetKey(KeyCode.E))
-                {
-
-                    transform.position = hit.collider.transform.position + transform.forward * 5 + transform.up * 2;
-
-                }
-
-
-
-
-            }
-            if (hit.collider.gameObject.tag == "door")
-            {
-                gameController.instance.doorText.gameObject.SetActive(true);
-
-
-
-            }
-            else
-            {
-
-                gameController.instance.doorText.gameObject.SetActive(false);
-            }
-
-
-
-
-
-
-        }
-        else
-        {
-
-            gameController.instance.doorText.gameObject.SetActive(false);
-        }
-
-
-
-
-
-
-
-    }
-
-    public void teleport(Transform location)
-    {
-        transform.position = location.position;
-        transform.rotation = location.rotation;
-
-    }
-
-    private void myInput()
+    private void MyInput()
     {
         horizontalInput = Input.GetAxisRaw("Horizontal");
         verticalInput = Input.GetAxisRaw("Vertical");
-        if (Input.GetKey(KeyCode.Space) && readyToJump && isGrounded)
+
+   
+        if(Input.GetKey(jumpKey) && readyToJump && isGrounded)
         {
-
             readyToJump = false;
+
             Jump();
-            Invoke(nameof(ResetJump), jumpcooldown);
+
+            Invoke(nameof(ResetJump), jumpCooldown);
         }
+    }
+
+    private void MovePlayer()
+    {
+      
+        moveDirection = orientation.forward * verticalInput + orientation.right * horizontalInput;
 
 
+        if (isGrounded)
+        {
+            if (Input.GetKey(KeyCode.LeftShift) )
+            {
+               
+                rb.AddForce(moveDirection.normalized * sprintSpeed * 10f, ForceMode.Force);
+                if(rb.velocity.magnitude > 6f)
+                    gameController.instance.currenthungervalue -= 5 * Time.deltaTime;
+            }
+            else
+            {
+                rb.AddForce(moveDirection.normalized * moveSpeed * 10f, ForceMode.Force);
+
+            }
+            
+
+        }
+        else if(!isGrounded)
+            rb.AddForce(moveDirection.normalized * moveSpeed * 10f * airMultiplier, ForceMode.Force);
     }
 
     private void SpeedControl()
     {
         Vector3 flatVel = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
 
-        if (flatVel.magnitude > moveSpeed)
+    
+        if(flatVel.magnitude > moveSpeed)
         {
             Vector3 limitedVel = flatVel.normalized * moveSpeed;
             rb.velocity = new Vector3(limitedVel.x, rb.velocity.y, limitedVel.z);
-
         }
-
-
     }
 
     private void Jump()
     {
+      
         rb.velocity = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
 
         rb.AddForce(transform.up * jumpForce, ForceMode.Impulse);
-
     }
     private void ResetJump()
     {
+
+
         readyToJump = true;
-
     }
-
-
-
-
-
-
-
 }
-
-
-
