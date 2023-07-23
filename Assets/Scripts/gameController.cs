@@ -3,17 +3,18 @@ using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
+using UnityEngine.AI;
+using UnityEngine.SceneManagement;
 public class gameController : MonoBehaviour
 {
 
     public TMP_Text moneytxt;
     public TMP_Text beginningText;
     public gamestate state = gamestate.classtime;
-    public float money; 
+    public float money;
     public static gameController instance;
     public TMP_Text interactiontxt;
     public TMP_Text doorText;
-    public TMP_Text eventTxt;
     public GameObject lunch;
     public GameObject classroom;
     public GameObject recess;
@@ -36,7 +37,6 @@ public class gameController : MonoBehaviour
     public float currentparentsatisfaction;
     public float hungermaxvalue;
     public float currenthungervalue;
-    int classes = 0;
     public days daystatus;
     public GameObject gangmembertext;
     public GameObject NPChandler;
@@ -47,8 +47,14 @@ public class gameController : MonoBehaviour
     public GameObject bribebutton;
     public GameObject launchattackbutton;
     public bool attackgoing;
-    bool pause;
+    [HideInInspector]  public bool pause;
     public GameObject bully;
+    public AudioSource teacher;
+    public TMP_Text reasonfordyingtext;
+    public TMP_Text peopleingangtext;
+    public GameObject pauseScreen;
+    public List<lunchbox> lunchboxes = new List<lunchbox>();
+    public GameObject winScreen;
 
     public void Awake()
     {
@@ -86,17 +92,26 @@ public class gameController : MonoBehaviour
         cam = Camera.main;
         daytext.text = "Monday";
         pause = true;
+        peopleingangtext.text = "People in gang: ";
+        pauseScreen.SetActive(false);
     }
 
     
     void Update()
     {
 
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+
+            pauseGame();
+
+        }
         if (screen.activeInHierarchy)
         {
             cam.gameObject.GetComponent<camController>().enabled = false;
-            player.gameObject.GetComponent<PlayerMovementTutorial>().enabled = false;
-
+            player.gameObject.GetComponent<PlayerController>().enabled = false;
+            parentsatis.gameObject.SetActive(false);
+            hungerslider.gameObject.SetActive(false);
 
         }
         
@@ -106,6 +121,7 @@ public class gameController : MonoBehaviour
 
 
         }
+   
         
         
         
@@ -120,72 +136,71 @@ public class gameController : MonoBehaviour
         
         if(state == gamestate.newday)
         {
-            if(daystatus == days.monday)
+            for(int i = 0; i < lunchboxes.Count; i++)
+            {
+                lunchboxes[i].ResetMoney();
+
+            }
+            bully.gameObject.GetComponent<NavMeshAgent>().speed += 3;
+            if (daystatus == days.monday)
             {
                 daystatus = days.tuesday;
                 currentparentsatisfaction -= 20;
+                currenthungervalue -= 30;
                 state = gamestate.classtime;
-                classes = 0;
+                changeposition();
                 daytext.text = "Tuesday";
             }
             else if(daystatus == days.tuesday)
             {
                 daystatus = days.wednesday;
-                currentparentsatisfaction -= 40;
+                currentparentsatisfaction -= 20;
+                currenthungervalue -= 20;
                 state = gamestate.classtime;
-                classes = 0;
+                changeposition();
                 daytext.text = "Wednesday";
             }
             else if (daystatus == days.wednesday)
             {
 
                 daystatus = days.thursday;
-                currentparentsatisfaction -= 30;
+                currentparentsatisfaction -= 20;
+                currenthungervalue -= 50;
                 state = gamestate.classtime;
-                classes = 0;
+                changeposition();
                 daytext.text = "Thursday";
             }
             else if (daystatus == days.thursday)
             {
                 daystatus = days.friday;
-                currentparentsatisfaction -= 40;
+                currentparentsatisfaction -= 20;
+                currenthungervalue -= 50;
                 state = gamestate.classtime;
-                classes = 0;
+                changeposition();
                 daytext.text = "Friday";
             }
            
 
         }
-        if(money == 0)
+        if(money <= 0)
         {
 
             //game end
-            EndScreen.gameObject.SetActive(true);
-
-
+            gameEnd("You lost all your money!");
         }
-        if(currentparentsatisfaction == 0)
+        if(currentparentsatisfaction <= 0)
         {
-            EndScreen.gameObject.SetActive(true);
-            //gameend
-
+            gameEnd("Your parents became too unhappy!");
         }
-        if(currenthungervalue == 0)
+        if(currenthungervalue <= 0)
         {
 
-            EndScreen.gameObject.SetActive(true);
-            //game end 
+            gameEnd("You died of hunger!");
         }
        
         timer.text = "Time: " + (int)timeRemaining;
 
-        if (classes >= 2)
-        {
-
-            state = gamestate.newday;
-
-
-        }
+       
         if((state == gamestate.classtime || state == gamestate.lunchtime || state == gamestate.recess) && !pause)
         {
             time();
@@ -201,8 +216,9 @@ public class gameController : MonoBehaviour
                         player.transform.position = lunchteleport.position;
                         state = gamestate.lunchtime;
                         timeRemaining = classTime;
-                        classes++;
-                        changeposition();
+                        teacher.Stop();
+                        teacher.loop = false;
+                    changeposition();
                         break;
                     case gamestate.lunchtime:
                         state = gamestate.recess;
@@ -211,15 +227,35 @@ public class gameController : MonoBehaviour
                         player.transform.position = recessteleport.position;
                         changeposition();
                         recesstime();
-
                     break;
                     case gamestate.recess:
-                        state = gamestate.classtime;
-                        timeRemaining = classTime;
-                        NPChandler.gameObject.GetComponent<nameGenerator>().respawn();
-                        changeposition();
-                        player.transform.position = classteleport.position;
-                        player.transform.position = classteleport.position;
+                        if (daystatus == days.friday)
+                        {
+
+                            launchattackbutton.gameObject.SetActive(true);
+                            pause = true;
+                            interactionScreen.SetActive(true);
+                            interactiontxt.text = "You've outlasted the bully everyday, now launch your attack on him";
+                            bribebutton.gameObject.SetActive(false);
+                            cam.gameObject.GetComponent<camController>().enabled = false;
+                            player.gameObject.GetComponent<PlayerController>().enabled = false;
+                            Cursor.lockState = CursorLockMode.None;
+                        }
+                        else
+                        {
+
+                            state = gamestate.newday;
+                            timeRemaining = classTime;
+                            NPChandler.gameObject.GetComponent<nameGenerator>().respawn();
+                            changeposition();
+                            player.transform.position = classteleport.position;
+                            player.transform.position = classteleport.position;
+                            teacher.Play();
+                            teacher.loop = true;
+
+                    }
+
+                        
                         break;
 
 
@@ -233,26 +269,30 @@ public class gameController : MonoBehaviour
         moneytxt.text = "Money: " + money; 
         if(state == gamestate.classtime)
         {
-            eventTxt.text = "Get to class";
+            
             lunch.gameObject.SetActive(false);
             classroom.gameObject.SetActive(true);
             recess.gameObject.SetActive(false);
+            
         }
         else if(state == gamestate.lunchtime)
         {
-            eventTxt.text = "Lunch Time!!!";
+            
         
             lunch.gameObject.SetActive(true);
             classroom.gameObject.SetActive(false);
             recess.gameObject.SetActive(false);
+            teacher.Stop();
+            teacher.loop = false;
         }
         else if (state == gamestate.recess)
         {
-            eventTxt.text = "Recess";
+           
             lunch.gameObject.SetActive(false);
             classroom.gameObject.SetActive(false);
             recess.gameObject.SetActive(true);
-           
+            teacher.Stop();
+            teacher.loop = false;
         }
 
         if (screen.activeInHierarchy)
@@ -293,10 +333,13 @@ public class gameController : MonoBehaviour
         Camera.main.transform.position = viewpoint.gameObject.transform.position;
         Camera.main.transform.rotation = viewpoint.gameObject.transform.rotation;
         Cursor.lockState = CursorLockMode.Locked;
-    
         cam.gameObject.GetComponent<camController>().enabled = true;
-        player.gameObject.GetComponent<PlayerMovementTutorial>().enabled = true;
+        player.gameObject.GetComponent<PlayerController>().enabled = true;
         pause = false;
+        parentsatis.gameObject.SetActive(true);
+        hungerslider.gameObject.SetActive(true);
+        if(player.gameObject.GetComponent<interacting>().person.gameObject != null)
+            player.gameObject.GetComponent<interacting>().person.gameObject.GetComponent<positioning>().resetRotation();
     }
      IEnumerator MyCouroutine()
     {
@@ -304,24 +347,26 @@ public class gameController : MonoBehaviour
         beginningText.gameObject.SetActive(false);
 
     }
-    
+
     public void recesstime()
     {
-            pause = true;
-            interactionScreen.SetActive(true);
-            interactiontxt.text = "It's recess time, your bully is going to go after you to steal your money, last the period in order to keep your money.";
-            bribebutton.gameObject.SetActive(false);
-            cam.gameObject.GetComponent<camController>().enabled = false;
-            player.gameObject.GetComponent<PlayerMovementTutorial>().enabled = false;
-            Cursor.lockState = CursorLockMode.None;
-      
-           if(daystatus == days.friday)
-            {
+        pause = true;
+        interactionScreen.SetActive(true);
+        interactiontxt.text = "It's recess time, your bully is going to go after you to steal your money, last the period in order to keep your money.";
+        bribebutton.gameObject.SetActive(false);
+        cam.gameObject.GetComponent<camController>().enabled = false;
+        player.gameObject.GetComponent<PlayerController>().enabled = false;
+        Cursor.lockState = CursorLockMode.None;
 
-                launchattackbutton.gameObject.SetActive(true);
+        if (daystatus == days.monday)
+        {
+            bully.gameObject.GetComponent<NavMeshAgent>().speed = 3;
 
-            }
 
+        }
+
+        
+          
 
     }
 
@@ -339,6 +384,57 @@ public class gameController : MonoBehaviour
 
     }
         bully.gameObject.GetComponent<positioning>().changeposition();
+    }
+
+    public void reloadScene()
+    {
+        SceneManager.LoadScene("SampleScene");
+
+
+
+
+    }
+
+    public void gameEnd(string reasonfordying)
+    {
+
+        EndScreen.gameObject.SetActive(true);
+        Cursor.lockState = CursorLockMode.None;
+        parentsatis.gameObject.SetActive(false);
+        parenttxt.gameObject.SetActive(false);
+        hungerslider.gameObject.SetActive(false);
+        hungertxt.gameObject.SetActive(false);
+        //gameend
+        cam.gameObject.GetComponent<camController>().enabled = false;
+        player.gameObject.GetComponent<PlayerController>().enabled = false;
+        reasonfordyingtext.text = reasonfordying;
+        pause = true;
+        teacher.Stop();
+        teacher.loop = false;
+        peopleingangtext.gameObject.SetActive(false);
+    }
+    
+    public void continueGame()
+    {
+        pauseScreen.SetActive(false);
+        pause = false;
+        cam.gameObject.GetComponent<camController>().enabled = true;
+        player.gameObject.GetComponent<PlayerController>().enabled = true;
+        teacher.Play();
+        teacher.loop = true;
+        Cursor.lockState = CursorLockMode.Locked;
+    }
+
+    public void pauseGame()
+    {
+
+        pauseScreen.SetActive(true);
+        pause = true;
+        cam.gameObject.GetComponent<camController>().enabled = false;
+        player.gameObject.GetComponent<PlayerController>().enabled = false;
+        teacher.Stop();
+        teacher.loop = false;
+        Cursor.lockState = CursorLockMode.None;
     }
     
 }

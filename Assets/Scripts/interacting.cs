@@ -11,15 +11,15 @@ public class interacting : MonoBehaviour
     public GameObject player;
     public GameObject interactionScreen;
     public GameObject viewpoint;
-    private GameObject person;
+    [HideInInspector] public GameObject person;
     public GameObject foodTray;
+    public GameObject foodTrayHolder;
     public GameObject hand;
     private bool holding;
     public GameObject closebutton;
     public GameObject bribebutton;
     public GameObject joingangbutton;
     public GameObject okbutton;
-    Quaternion originalrot;
     public TMP_Text interactionText;
     int lunchboxesstolenfrom;
     public GameObject NPChandler;
@@ -29,6 +29,8 @@ public class interacting : MonoBehaviour
         cam = Camera.main;
 
         interactionScreen.SetActive(false);
+        bribebutton.gameObject.SetActive(false);
+        foodTrayHolder = null;
     }
 
     // Update is called once per frame
@@ -38,6 +40,13 @@ public class interacting : MonoBehaviour
         basicInteractions();
 
 
+      
+        if (!interactionScreen.activeInHierarchy)
+        {
+            bribebutton.gameObject.SetActive(false);
+        }
+
+        
     }
 
 
@@ -55,7 +64,7 @@ public class interacting : MonoBehaviour
         {
             if (Input.GetKey(KeyCode.E))
             {
-                bribebutton.gameObject.SetActive(true);
+
                 if (hit.collider.gameObject.GetComponent<NPCStorage>().ingang == false)
                     looking(hit, "What do you want?");
                 else
@@ -67,95 +76,118 @@ public class interacting : MonoBehaviour
         }
         else if (Physics.Raycast(ray, out hit, 7f))
         {
-            
-            if (hit.collider.tag == "trash")
+            if (hit.collider.tag != "Default")
             {
-                interactionText.gameObject.SetActive(true);
-                interactionText.text = "Throw away your trash";
-            }
-            if (Input.GetKey(KeyCode.E)){
-                switch (hit.collider.gameObject.tag)
+
+                if (Input.GetKeyDown(KeyCode.E))
                 {
 
-                    case null:
-                        break;
-                    case "principal":
-                        originalrot = hit.collider.transform.rotation;
-                        looking(hit, "Get back to class");
-                        break;
-                    case "teacher":
-                        originalrot = hit.collider.transform.rotation;
-                        looking(hit, "Welcome to Class");
-                        break;
-                    case "bully":
-                        originalrot = hit.collider.transform.rotation;
-                        looking(hit, "I oughta kick your butt");
-                        break;
-                    case "lunchlady":
-                        originalrot = hit.collider.transform.rotation;
-                        looking(hit, "Here's your food!");
-                        Instantiate(foodTray, hand.transform.position, hand.transform.rotation, hand.transform);
-                        gameController.instance.currenthungervalue += 20;
-                        gameController.instance.money -= 10f;
-                        holding = true;
+                    if (hit.collider.tag == "principal")
+                    {
 
-                        break;
-                    case "trash":
-                        originalrot = hit.collider.transform.rotation;
-                        Destroy(foodTray);
-                        Cursor.lockState = CursorLockMode.None;
+                        lookingNPC(hit, "Get back to class");
+                    }
+                    else if (hit.collider.tag == "teacher")
+                    {
+
+                        lookingNPC(hit, "Welcome to Class");
+                    }
+                    else if (hit.collider.tag == "bully")
+                    {
+                        lookingNPC(hit, "I oughta kick your butt");
+
+
+                    }
+                    else if (hit.collider.tag == "lunchlady")
+                    {
+                        if (foodTrayHolder == null)
+                        {
+                            lookingNPC(hit, "Here's your food");
+                            gameController.instance.currenthungervalue += 20;
+                            gameController.instance.money -= 10f;
+                            foodTrayHolder = Instantiate(foodTray, hand.transform.position, hand.transform.rotation, hand.transform);
+
+                        }
+                        else
+                        {
+
+                            lookingNPC(hit, "Throw away your trash before getting more! IDIOT!");
+
+                        }
+
+                    }
+                    else if (hit.collider.tag == "trash" && foodTrayHolder != null)
+                    {
+
+                        Destroy(foodTrayHolder);
                         Camera.main.transform.LookAt(hit.collider.transform);
-                        holding = false;
-                        break;
-                    case "lunchbox":
-                       
-                            if(hit.collider.gameObject.GetComponent<lunchbox>().money > 0)
-                            {
-                                gameController.instance.money += 5f;
-                                hit.collider.gameObject.GetComponent<lunchbox>().money -= 5;
 
-                            }
+                    }
+                    else if (hit.collider.tag == "lunchbox")
+                    {
+                        if (hit.collider.gameObject.GetComponent<lunchbox>().money > 0)
+                        {
+                            gameController.instance.money += 5f;
+                            hit.collider.gameObject.GetComponent<lunchbox>().money -= 5;
 
+                        }
 
-                      
-                        break;
-
-                }
-
-                    
-
-
-
-
-            }
-            if (hit.collider.tag == "lunchbox")
-            {
-                if(hit.collider.gameObject.GetComponent<lunchbox>().money > 0)
-                {
-                    interactionText.gameObject.SetActive(true);
-                    interactionText.text = "Steal $5";
+                    }
+                    else if (hit.collider.tag == "skipbutton")
+                    {
+                        gameController.instance.timeRemaining = 0;
+                        interactionText.gameObject.SetActive(false);
+                    }
 
                 }
-                
-            }
-            else if (hit.collider.tag == "lunchlady")
-            {
-                if (hit.collider.gameObject.GetComponent<lunchbox>().money > 0)
+                if (hit.collider.tag == "lunchbox")
                 {
+                    if (hit.collider.gameObject.GetComponent<lunchbox>().money > 0)
+                    {
+                        interactionText.gameObject.SetActive(true);
+                        interactionText.text = "Steal $5";
+
+                    }
+
+                }
+                else if (hit.collider.tag == "lunchlady")
+                {
+
                     interactionText.gameObject.SetActive(true);
                     interactionText.text = "Get Lunch";
 
+
+
                 }
+                else if (hit.collider.tag == "trash")
+                {
+                    interactionText.gameObject.SetActive(true);
+                    interactionText.text = "Throw away trash";
+
+
+                }
+                else if (hit.collider.tag == "skipbutton")
+                {
+                    interactionText.gameObject.SetActive(true);
+                    interactionText.text = "Skip forward to next period";
+
+
+                }
+                else
+                {
+                    interactionText.text = "";
+
+                }
+              
+
+
 
             }
-            else
-            {
+        }
+        else
+        {
 
-                interactionText.gameObject.SetActive(false);
-            }
-           
-            
-
+            interactionText.text = "";
         }
 
     }
@@ -169,9 +201,24 @@ public class interacting : MonoBehaviour
         interactionScreen.SetActive(true);
         Cursor.lockState = CursorLockMode.None;
         person = hit.collider.gameObject;
-        gameController.instance.moneytheyhave.text = "Money they have: " + hit.collider.GetComponent<NPCStorage>().money.ToString();
+
+        if(person.GetComponent<NPCStorage>() != null)
+            gameController.instance.moneytheyhave.text = "Money they have: " + hit.collider.GetComponent<NPCStorage>().money.ToString();
+
         cam.gameObject.GetComponent<camController>().enabled = false;
-        player.gameObject.GetComponent<PlayerMovementTutorial>().enabled = false;
+        player.gameObject.GetComponent <PlayerController>().enabled = false;
+
+        if(gameController.instance.state == gameController.gamestate.lunchtime)
+        {
+            bribebutton.gameObject.SetActive(true);
+
+
+        }
+        else
+        {
+            bribebutton.gameObject.SetActive(false);
+
+        }
         
         if (person.gameObject.GetComponent<NPCStorage>().ingang == true)
         {
@@ -179,7 +226,21 @@ public class interacting : MonoBehaviour
 
 
         }
-        else
+      
+    }
+    public void lookingNPC(RaycastHit hit, string message)
+    {
+        hit.collider.transform.LookAt(this.transform);
+        gameController.instance.interactiontxt.text = message;
+        Camera.main.transform.LookAt(hit.collider.transform);
+        interactionScreen.SetActive(true);
+        Cursor.lockState = CursorLockMode.None;
+        person = hit.collider.gameObject;
+        cam.gameObject.GetComponent<camController>().enabled = false;
+        player.gameObject.GetComponent<PlayerController>().enabled = false;
+        bribebutton.gameObject.SetActive(false);
+
+        if(person.tag == "teacher")
         {
 
             bribebutton.gameObject.SetActive(true);
@@ -208,6 +269,7 @@ public class interacting : MonoBehaviour
             }
             else
             {
+                gameController.instance.interactiontxt.text = "Don't tell anybody";
                 gameController.instance.currentparentsatisfaction += 10;
                 gameController.instance.money -= 10;
 
@@ -233,6 +295,15 @@ public class interacting : MonoBehaviour
 
 
         }
+        else
+        {
+            gameController.instance.interactiontxt.text = "You don't have enough money! LOL! BROKE!";
+            bribebutton.gameObject.SetActive(false);
+            closebutton.gameObject.SetActive(true);
+           
+
+
+        }
     }
 
     
@@ -242,12 +313,11 @@ public class interacting : MonoBehaviour
         closebutton.gameObject.SetActive(true);
         joingangbutton.gameObject.SetActive(false);
         gameController.instance.interactiontxt.text = "Okay";
-        gameController.instance.money -= person.GetComponent<NPCStorage>().money / 2 ;
-        person.GetComponent<NPCStorage>().money += person.GetComponent<NPCStorage>().money / 2;
+        gameController.instance.money -= gameController.instance.money / 2 ;
+        person.GetComponent<NPCStorage>().money += gameController.instance.money / 2;
         person.GetComponent<NPCStorage>().ingang = true;
         gameController.instance.moneytheyhave.text = "Money they have: " + person.GetComponent<NPCStorage>().money;
-
-        NPChandler.GetComponent<nameGenerator>().addToGang(person.name);
+        gameController.instance.peopleingangtext.text += "\n" + person.GetComponent<NPCStorage>().name;
     }
 
     

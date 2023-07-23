@@ -58,6 +58,20 @@ public class nameGenerator : MonoBehaviour
 
         
     }
+    private void Update()
+    {
+
+        for (int i = 0; i < classroom.Count; i++)
+        {
+            if (classroom[i].ingang == true && !ganglist.Contains(classroom[i]))
+            {
+                ganglist.Add(classroom[i]);
+
+            }
+
+        }
+
+    }
     public void respawn()
     {
        
@@ -95,27 +109,7 @@ public class nameGenerator : MonoBehaviour
 
     }
 
-   public void addToGang(string name)
-    {
-        int index = 0; 
-        for (int i = 0; i < names.Count; i++)
-        {
-            if (name == names[i])
-            {
-
-                index = i;
-
-
-            }
-
-
-        }
-
-        
-        classroom[index].ingang = true;
-     
-
-    }
+ 
 
    
     

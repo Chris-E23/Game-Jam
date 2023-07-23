@@ -16,7 +16,7 @@ public class NPCStorage : MonoBehaviour
 
         this.gameObject.GetComponent<AIController>().enabled = false;
         player = gameController.instance.player;
-
+        ingang = false;
     }
 
     void Update()
