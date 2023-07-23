@@ -5,105 +5,76 @@ using TMPro;
 
 public class PlayerController : MonoBehaviour
 {
-    public Transform viewPoint;
-    public float mouseSens = 1f;
-    private float vertRotStore;
+    
+   
     private Vector2 mouseInput;
-    public float moveSpeed = 5f, runSpeed = 8f;
+    public float moveSpeed = 5f;
     private float activeMoveSpeed;
-    private Vector3 moveDir, movement;
-    public CharacterController charCon;
+    private Vector3 moveDir;
     private Camera cam;
-    public float jumpForce = 7.5f, gravityMod = 2.5f;
-    public Transform groundCheckPoint;
+    public float jumpForce;
+    public float jumpcooldown;
+    public float airmultiplier;
+    bool readyToJump;
     private bool isGrounded;
     public LayerMask groundLayers;
-    public Transform frontdoor;
-    public bool cameramove;
+    float xRot;
+    float yRot;
+    public Transform orientation;
+    public float playerHeight;
+   
+    float horizontalInput;
+    float verticalInput;
+    
+    Rigidbody rb;
+    public float groundDrag;
+    public GameObject player;
 
 
     void Start()
     {
-        
-       
+
+        rb.GetComponent<Rigidbody>();
+        rb.freezeRotation = true;
         cam = Camera.main;
-        cameramove = true;
+        readyToJump = true;
+      
     }
 
-   
+
     void Update()
     {
-        if (cameramove)
-        {
-
-            mouseInput = new Vector2(Input.GetAxisRaw("Mouse X"), Input.GetAxisRaw("Mouse Y")) * mouseSens;
-
-            transform.rotation = Quaternion.Euler(transform.rotation.eulerAngles.x, transform.rotation.eulerAngles.y + mouseInput.x, transform.rotation.eulerAngles.z);
-
-            vertRotStore += mouseInput.y;
-
-            vertRotStore = Mathf.Clamp(vertRotStore, -60f, 60f);
-
-            viewPoint.rotation = Quaternion.Euler(-vertRotStore, viewPoint.rotation.eulerAngles.y, viewPoint.rotation.eulerAngles.z);
-
-            moveDir = new Vector3(Input.GetAxisRaw("Horizontal"), 0f, Input.GetAxisRaw("Vertical"));
-
-            if (Input.GetKey(KeyCode.LeftShift))
-            {
-                activeMoveSpeed = runSpeed;
-
-
-            }
-            else
-            {
-                activeMoveSpeed = moveSpeed;
-
-            }
-
-            float yVel = movement.y;
-            movement = ((transform.forward * moveDir.z) + (transform.right * moveDir.x)).normalized * activeMoveSpeed;
-            movement.y = yVel;
-            isGrounded = Physics.Raycast(groundCheckPoint.position, Vector3.down, .25f, groundLayers);
-
-
-            if (charCon.isGrounded)
-            {
-
-                movement.y = 0f;
-            }
-
-
-
-            if (Input.GetButtonDown("Jump") && isGrounded)
-            {
-                movement.y = jumpForce;
-
-            }
-            if (Input.GetKeyDown(KeyCode.Escape))
-            {
-                Cursor.lockState = CursorLockMode.None;
-
-            }
-
-            else if (Cursor.lockState == CursorLockMode.None)
-            {
-                if (Input.GetMouseButtonDown(0))
-                {
-                    Cursor.lockState = CursorLockMode.Locked;
-                }
-
-
-            }
-            movement.y += Physics.gravity.y * Time.deltaTime * gravityMod;
-            charCon.Move(movement * Time.deltaTime);
-
-        }
+        isGrounded = Physics.Raycast(transform.position, Vector3.down, playerHeight * 0.5f + 0.4f, groundLayers);
         
+       
+        //openDoor();
+        myInput();
+        MovePlayer();
 
+        SpeedControl();
+        if (isGrounded)
+        {
+            rb.drag = groundDrag;
+        }
+        else
+        {
+            rb.drag = 0;
+        }
 
-        openDoor();
+    }
+    private void FixedUpdate()
+    {
+        MovePlayer();
+    }
+    private void MovePlayer()
+    {
 
+        moveDir = orientation.forward * verticalInput + orientation.right * horizontalInput;
 
+        if (isGrounded)
+            rb.AddForce(moveDir.normalized * moveSpeed * 10f, ForceMode.Force);
+        else if (!isGrounded)
+            rb.AddForce(moveDir.normalized * moveSpeed * 10f * airmultiplier, ForceMode.Force);
     }
     public void openDoor()
     {
@@ -163,11 +134,51 @@ public class PlayerController : MonoBehaviour
     public void teleport(Transform location)
     {
         transform.position = location.position;
+        transform.rotation = location.rotation;
+
+    }
+
+    private void myInput()
+    {
+        horizontalInput = Input.GetAxisRaw("Horizontal");
+        verticalInput = Input.GetAxisRaw("Vertical");
+        if (Input.GetKey(KeyCode.Space) && readyToJump && isGrounded)
+        {
+
+            readyToJump = false;
+            Jump();
+            Invoke(nameof(ResetJump), jumpcooldown);
+        }
 
 
     }
 
-   
+    private void SpeedControl()
+    {
+        Vector3 flatVel = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
+
+        if (flatVel.magnitude > moveSpeed)
+        {
+            Vector3 limitedVel = flatVel.normalized * moveSpeed;
+            rb.velocity = new Vector3(limitedVel.x, rb.velocity.y, limitedVel.z);
+
+        }
+
+
+    }
+
+    private void Jump()
+    {
+        rb.velocity = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
+
+        rb.AddForce(transform.up * jumpForce, ForceMode.Impulse);
+
+    }
+    private void ResetJump()
+    {
+        readyToJump = true;
+
+    }
 
 
 
@@ -176,5 +187,6 @@ public class PlayerController : MonoBehaviour
 
 
 }
+
 
 

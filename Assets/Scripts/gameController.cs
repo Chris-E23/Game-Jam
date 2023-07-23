@@ -60,11 +60,17 @@ public class gameController : MonoBehaviour
     public GameObject NPChandler;
     
     bool inInteraction;
+
+    public GameObject EndScreen;
+
+    public GameObject gangmembertext;
+
+    private Camera cam;
     public void Awake()
     {
         instance = this;
         daystatus = days.monday;
-        
+        cam = Camera.main;
 
     }
     public enum gamestate
@@ -92,67 +98,80 @@ public class gameController : MonoBehaviour
         timeRemaining = classTime;
         screen.SetActive(true);
         parentsatis.maxValue = parentsatisfactionmax;
-        hungerslider.maxValue = hungermaxvalue; 
-
-        
+        hungerslider.maxValue = hungermaxvalue;
+        player.GetComponent<PlayerController>().teleport(classteleport);
+        cam.gameObject.GetComponent<camController>().enabled = false;
     }
 
     
     void Update()
     {
+       if(NPChandler.gameObject.GetComponent<nameGenerator>().ganglist.Count >= 5)
+        {
+            gangmembertext.gameObject.SetActive(true);
+
+
+        }
         parentsatis.value = currentparentsatisfaction;
         hungerslider.value = currenthungervalue;
         if(state == gamestate.newday)
         {
-
-            switch (daystatus)
+            if(daystatus == days.monday)
             {
-                case days.monday:
-                    daystatus = days.tuesday;
-                    currentparentsatisfaction -= 20;
-                    break;
-                case days.tuesday:
-                    daystatus = days.wednesday;
-                    currentparentsatisfaction -= 40;
-                    break;
-                case days.wednesday:
-                    daystatus = days.thursday;
-                    currentparentsatisfaction -= 30;
-                    break;
-                case days.thursday:
-                    daystatus = days.friday;
-                    currentparentsatisfaction -= 40;
-                    break;
-
-
-
+                daystatus = days.tuesday;
+                currentparentsatisfaction -= 20;
+                state = gamestate.classtime;
+                classes = 0;
             }
+            else if(daystatus == days.tuesday)
+            {
+                daystatus = days.wednesday;
+                currentparentsatisfaction -= 40;
+                state = gamestate.classtime;
+                classes = 0;
+            }
+            else if (daystatus == days.wednesday)
+            {
+
+                daystatus = days.thursday;
+                currentparentsatisfaction -= 30;
+                state = gamestate.classtime;
+                classes = 0;
+            }
+            else if (daystatus == days.thursday)
+            {
+                daystatus = days.friday;
+                currentparentsatisfaction -= 40;
+                state = gamestate.classtime;
+                classes = 0;
+            }
+           
 
         }
         if(money == 0)
         {
 
             //game end
-
+            EndScreen.gameObject.SetActive(true);
 
 
         }
         if(currentparentsatisfaction == 0)
         {
-
+            EndScreen.gameObject.SetActive(true);
             //gameend
 
         }
         if(currenthungervalue == 0)
         {
 
-
+            EndScreen.gameObject.SetActive(true);
             //game end 
         }
        
         timer.text = "Time: " + (int)timeRemaining;
 
-        if (classes > 2)
+        if (classes >= 2)
         {
 
             state = gamestate.newday;
@@ -166,30 +185,32 @@ public class gameController : MonoBehaviour
         
         if(timeRemaining <= 0)
         {
-           
-            
                 switch (state)
                 {
 
                     case gamestate.classtime:
+                        NPChandler.gameObject.GetComponent<nameGenerator>().respawn();
+                    player.GetComponent<PlayerController>().teleport(lunchteleport);
                         state = gamestate.lunchtime;
                         timeRemaining = classTime;
-                        NPChandler.gameObject.GetComponent<nameGenerator>().respawn();
-                        player.GetComponent<PlayerController>().teleport(classteleport);
                         classes++;
+                        
                         break;
                     case gamestate.lunchtime:
                         state = gamestate.recess;
                         timeRemaining = classTime;
                         NPChandler.gameObject.GetComponent<nameGenerator>().respawn();
-                        player.GetComponent<PlayerController>().teleport(lunchteleport);
-                        break;
+                        player.GetComponent<PlayerController>().teleport(recessteleport);
+                        lunchtime();
+                  
+                    break;
                     case gamestate.recess:
                         state = gamestate.classtime;
                         timeRemaining = classTime;
                         NPChandler.gameObject.GetComponent<nameGenerator>().respawn();
-                        player.GetComponent<PlayerController>().teleport(recessteleport);
-                        break;
+                        player.GetComponent<PlayerController>().teleport(classteleport);
+                        recesstime();
+                    break;
 
 
 
@@ -210,6 +231,7 @@ public class gameController : MonoBehaviour
         else if(state == gamestate.lunchtime)
         {
             eventTxt.text = "Lunch Time!!!";
+        
             lunch.gameObject.SetActive(true);
             classroom.gameObject.SetActive(false);
             recess.gameObject.SetActive(false);
@@ -220,7 +242,7 @@ public class gameController : MonoBehaviour
             lunch.gameObject.SetActive(false);
             classroom.gameObject.SetActive(false);
             recess.gameObject.SetActive(true);
-            recesstime();
+           
         }
 
         if (screen.activeInHierarchy)
@@ -258,7 +280,11 @@ public class gameController : MonoBehaviour
     {
 
         screen.SetActive(false);
-
+        interactionScreen.SetActive(false);
+        Camera.main.transform.position = viewpoint.gameObject.transform.position;
+        Camera.main.transform.rotation = viewpoint.gameObject.transform.rotation;
+        Cursor.lockState = CursorLockMode.Locked;
+        cam.gameObject.GetComponent<camController>().enabled = true;
     }
      IEnumerator MyCouroutine()
     {
@@ -266,25 +292,28 @@ public class gameController : MonoBehaviour
         beginningText.gameObject.SetActive(false);
 
     }
-    public void closeInteraction()
-    {
-        interactionScreen.SetActive(false);
-        player.gameObject.GetComponent<PlayerController>().cameramove = true;
-        Camera.main.transform.position = viewpoint.gameObject.transform.position;
-        Camera.main.transform.rotation = viewpoint.gameObject.transform.rotation;
-        Cursor.lockState = CursorLockMode.Locked;
-    }
+    
     public void recesstime()
     {
-        if(daystatus == days.monday)
-        {
+        
             interactionScreen.SetActive(true);
             interactiontxt.text = "It's recess time, your bully is going to go after you to steal your money, last the period in order to keep your money.";
+            player.gameObject.GetComponent<interacting>().bribebutton.SetActive(false);
+            Cursor.lockState = CursorLockMode.None;
 
 
-        }
-      
-           
+
+
+
+    }
+    public void lunchtime()
+    {
+
+            interactionScreen.SetActive(true);
+            interactiontxt.text = "Lunch time, bribe people here in order for them to join your gang, also eat from the lunch line";
+            player.gameObject.GetComponent<interacting>().bribebutton.SetActive(false);
+            Cursor.lockState = CursorLockMode.None;
+
 
 
     }

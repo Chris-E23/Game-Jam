@@ -12,7 +12,7 @@ public class nameGenerator : MonoBehaviour
     private  List<string> names = new List<string>();
     private  List<float> money = new List<float>();
     public nameGenerator instance;
-
+    public List<NPCStorage> ganglist = new List<NPCStorage>();
     private void Awake()
     {
 
@@ -97,6 +97,28 @@ public class nameGenerator : MonoBehaviour
 
 
 
+
+    }
+
+   public void addToGang(string name)
+    {
+        int index = 0; 
+        for (int i = 0; i < names.Count; i++)
+        {
+            if (name == names[i])
+            {
+
+                index = i;
+
+
+            }
+
+
+        }
+
+        lunchpeople[index].ingang = true;
+        classroom[index].ingang = true;
+        recess[index].ingang = true;
 
     }
 

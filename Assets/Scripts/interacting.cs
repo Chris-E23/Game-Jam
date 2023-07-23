@@ -20,7 +20,8 @@ public class interacting : MonoBehaviour
     public GameObject joingangbutton;
     public GameObject okbutton;
     Quaternion originalrot;
-
+    public TMP_Text interactionText;
+    int lunchboxesstolenfrom;
     // Start is called before the first frame update
     void Start()
     {
@@ -53,7 +54,10 @@ public class interacting : MonoBehaviour
         {
             if (Input.GetKey(KeyCode.E))
             {
-                looking(hit, "What do you want?");
+                if(hit.collider.gameObject.GetComponent<NPCStorage>().ingang == false)
+                    looking(hit, "What do you want?");
+                else
+                    looking(hit, "What's up man!");
             }
 
 
@@ -61,9 +65,22 @@ public class interacting : MonoBehaviour
         }
         else if (Physics.Raycast(ray, out hit, 7f))
         {
+            if(hit.collider.tag == "lunchbox")
+            {
+                interactionText.gameObject.SetActive(true);
+                interactionText.text = "Steal $5";
+            }
+            if (hit.collider.tag == "trash")
+            {
+                interactionText.gameObject.SetActive(true);
+                interactionText.text = "Throw away your trash";
+            }
             if (Input.GetKey(KeyCode.E)){
                 switch (hit.collider.gameObject.tag)
                 {
+
+                    case null:
+                        break;
                     case "principal":
                         originalrot = hit.collider.transform.rotation;
                         looking(hit, "Get back to class");
@@ -80,17 +97,29 @@ public class interacting : MonoBehaviour
                         originalrot = hit.collider.transform.rotation;
                         looking(hit, "Here's your food!");
                         Instantiate(foodTray, hand.transform.position, hand.transform.rotation, hand.transform);
+                        gameController.instance.currenthungervalue += 20;
+                        gameController.instance.money -= 10f;
                         holding = true;
                         break;
                     case "trash":
                         originalrot = hit.collider.transform.rotation;
                         Destroy(foodTray);
-                        interactionScreen.SetActive(true);
-                        gameController.instance.interactiontxt.text = "Throw away your trash";
                         Cursor.lockState = CursorLockMode.None;
                         Camera.main.transform.LookAt(hit.collider.transform);
                         Instantiate(foodTray, hand.transform.position, hand.transform.rotation, hand.transform);
                         holding = false;
+                        break;
+                    case "lunchbox":
+                       
+                            if(hit.collider.gameObject.GetComponent<lunchbox>().money > 0)
+                            {
+                                gameController.instance.money += 5f;
+                                hit.collider.gameObject.GetComponent<lunchbox>().money -= 5;
+
+                            }
+
+
+                      
                         break;
 
                 }
@@ -113,7 +142,6 @@ public class interacting : MonoBehaviour
 
         hit.collider.transform.LookAt(this.transform);
         gameController.instance.interactiontxt.text = message;
-        player.gameObject.GetComponent<PlayerController>().cameramove = false;
         Camera.main.transform.LookAt(hit.collider.transform);
         interactionScreen.SetActive(true);
         Cursor.lockState = CursorLockMode.None;
@@ -123,15 +151,7 @@ public class interacting : MonoBehaviour
 
         
     }
-    public void closeInteraction()
-    {
-        interactionScreen.SetActive(false);
-        player.gameObject.GetComponent<PlayerController>().cameramove = true;
-        Camera.main.transform.position = viewpoint.gameObject.transform.position;
-        Camera.main.transform.rotation = viewpoint.gameObject.transform.rotation;
-        Cursor.lockState = CursorLockMode.Locked;
-        person.transform.rotation = originalrot;
-    }
+   
     public void bribe()
     {
 
@@ -155,7 +175,7 @@ public class interacting : MonoBehaviour
             else
             {
                 gameController.instance.currentparentsatisfaction += 10;
-
+                gameController.instance.money -= 10;
 
             }
 
@@ -186,6 +206,7 @@ public class interacting : MonoBehaviour
         joingangbutton.gameObject.SetActive(false);
         gameController.instance.interactiontxt.text = "Okay";
         gameController.instance.money -= person.GetComponent<NPCStorage>().money / 2 ;
+        person.GetComponent<NPCStorage>().money += person.GetComponent<NPCStorage>().money / 2;
 
     }
 

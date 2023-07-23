@@ -7,8 +7,8 @@ public class NPCStorage : MonoBehaviour
 {
     public string name;
     public TMP_Text nametxt;
-    public float money; 
-
+    public float money;
+    public bool ingang;
 
     void Start()
     {
