@@ -22,6 +22,7 @@ public class interacting : MonoBehaviour
     Quaternion originalrot;
     public TMP_Text interactionText;
     int lunchboxesstolenfrom;
+    public GameObject NPChandler;
     // Start is called before the first frame update
     void Start()
     {
@@ -54,7 +55,8 @@ public class interacting : MonoBehaviour
         {
             if (Input.GetKey(KeyCode.E))
             {
-                if(hit.collider.gameObject.GetComponent<NPCStorage>().ingang == false)
+                bribebutton.gameObject.SetActive(true);
+                if (hit.collider.gameObject.GetComponent<NPCStorage>().ingang == false)
                     looking(hit, "What do you want?");
                 else
                     looking(hit, "What's up man!");
@@ -65,11 +67,7 @@ public class interacting : MonoBehaviour
         }
         else if (Physics.Raycast(ray, out hit, 7f))
         {
-            if(hit.collider.tag == "lunchbox")
-            {
-                interactionText.gameObject.SetActive(true);
-                interactionText.text = "Steal $5";
-            }
+            
             if (hit.collider.tag == "trash")
             {
                 interactionText.gameObject.SetActive(true);
@@ -100,13 +98,13 @@ public class interacting : MonoBehaviour
                         gameController.instance.currenthungervalue += 20;
                         gameController.instance.money -= 10f;
                         holding = true;
+
                         break;
                     case "trash":
                         originalrot = hit.collider.transform.rotation;
                         Destroy(foodTray);
                         Cursor.lockState = CursorLockMode.None;
                         Camera.main.transform.LookAt(hit.collider.transform);
-                        Instantiate(foodTray, hand.transform.position, hand.transform.rotation, hand.transform);
                         holding = false;
                         break;
                     case "lunchbox":
@@ -130,6 +128,31 @@ public class interacting : MonoBehaviour
 
 
             }
+            if (hit.collider.tag == "lunchbox")
+            {
+                if(hit.collider.gameObject.GetComponent<lunchbox>().money > 0)
+                {
+                    interactionText.gameObject.SetActive(true);
+                    interactionText.text = "Steal $5";
+
+                }
+                
+            }
+            else if (hit.collider.tag == "lunchlady")
+            {
+                if (hit.collider.gameObject.GetComponent<lunchbox>().money > 0)
+                {
+                    interactionText.gameObject.SetActive(true);
+                    interactionText.text = "Get Lunch";
+
+                }
+
+            }
+            else
+            {
+
+                interactionText.gameObject.SetActive(false);
+            }
            
             
 
@@ -139,7 +162,7 @@ public class interacting : MonoBehaviour
 
     public void looking(RaycastHit hit, string message)
     {
-
+        
         hit.collider.transform.LookAt(this.transform);
         gameController.instance.interactiontxt.text = message;
         Camera.main.transform.LookAt(hit.collider.transform);
@@ -147,9 +170,20 @@ public class interacting : MonoBehaviour
         Cursor.lockState = CursorLockMode.None;
         person = hit.collider.gameObject;
         gameController.instance.moneytheyhave.text = "Money they have: " + hit.collider.GetComponent<NPCStorage>().money.ToString();
+        cam.gameObject.GetComponent<camController>().enabled = false;
+        player.gameObject.GetComponent<PlayerMovementTutorial>().enabled = false;
         
+        if (person.gameObject.GetComponent<NPCStorage>().ingang == true)
+        {
+            bribebutton.gameObject.SetActive(false);
 
-        
+
+        }
+        else
+        {
+
+            bribebutton.gameObject.SetActive(true);
+        }
     }
    
     public void bribe()
@@ -180,6 +214,9 @@ public class interacting : MonoBehaviour
             }
 
 
+            
+           
+            
 
         }
 
@@ -198,16 +235,19 @@ public class interacting : MonoBehaviour
         }
     }
 
-   
+    
     public void joingang()
     {
-        bribebutton.gameObject.SetActive(true);
+        bribebutton.gameObject.SetActive(false);
         closebutton.gameObject.SetActive(true);
         joingangbutton.gameObject.SetActive(false);
         gameController.instance.interactiontxt.text = "Okay";
         gameController.instance.money -= person.GetComponent<NPCStorage>().money / 2 ;
         person.GetComponent<NPCStorage>().money += person.GetComponent<NPCStorage>().money / 2;
+        person.GetComponent<NPCStorage>().ingang = true;
+        gameController.instance.moneytheyhave.text = "Money they have: " + person.GetComponent<NPCStorage>().money;
 
+        NPChandler.GetComponent<nameGenerator>().addToGang(person.name);
     }
 
     

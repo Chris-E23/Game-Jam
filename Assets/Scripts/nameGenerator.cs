@@ -6,13 +6,15 @@ using TMPro;
 public class nameGenerator : MonoBehaviour
 {
    
-    public List<NPCStorage> lunchpeople = new List<NPCStorage>();
+  
     public List<NPCStorage> classroom = new List<NPCStorage>();
-    public List<NPCStorage> recess = new List<NPCStorage>();
+   
     private  List<string> names = new List<string>();
     private  List<float> money = new List<float>();
     public nameGenerator instance;
     public List<NPCStorage> ganglist = new List<NPCStorage>();
+
+    
     private void Awake()
     {
 
@@ -64,14 +66,7 @@ public class nameGenerator : MonoBehaviour
            
                 classroom[i].name = names[i];
                 classroom[i].money = money[i];
-
             
-                lunchpeople[i].name = names[i];
-                lunchpeople[i].money = money[i];
-
-                recess[i].name = names[i];
-                recess[i].money = money[i];
-
 
 
         }
@@ -116,9 +111,9 @@ public class nameGenerator : MonoBehaviour
 
         }
 
-        lunchpeople[index].ingang = true;
+        
         classroom[index].ingang = true;
-        recess[index].ingang = true;
+     
 
     }
 
