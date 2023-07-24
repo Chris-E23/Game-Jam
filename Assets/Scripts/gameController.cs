@@ -55,6 +55,8 @@ public class gameController : MonoBehaviour
     public GameObject pauseScreen;
     public List<lunchbox> lunchboxes = new List<lunchbox>();
     public GameObject winScreen;
+    public AudioSource bullydying;
+    public GameObject closebutton;
 
     public void Awake()
     {
@@ -141,7 +143,7 @@ public class gameController : MonoBehaviour
                 lunchboxes[i].ResetMoney();
 
             }
-            bully.gameObject.GetComponent<NavMeshAgent>().speed += 3;
+            bully.gameObject.GetComponent<NavMeshAgent>().speed += 1;
             if (daystatus == days.monday)
             {
                 daystatus = days.tuesday;
@@ -179,6 +181,7 @@ public class gameController : MonoBehaviour
                 changeposition();
                 daytext.text = "Friday";
             }
+            
            
 
         }
@@ -227,19 +230,32 @@ public class gameController : MonoBehaviour
                         player.transform.position = recessteleport.position;
                         changeposition();
                         recesstime();
+                        
                     break;
                     case gamestate.recess:
                         if (daystatus == days.friday)
                         {
+
+                            if (NPChandler.gameObject.GetComponent<nameGenerator>().ganglist.Count >= 5)
+                            {
 
                             launchattackbutton.gameObject.SetActive(true);
                             pause = true;
                             interactionScreen.SetActive(true);
                             interactiontxt.text = "You've outlasted the bully everyday, now launch your attack on him";
                             bribebutton.gameObject.SetActive(false);
+                            closebutton.SetActive(false);
                             cam.gameObject.GetComponent<camController>().enabled = false;
                             player.gameObject.GetComponent<PlayerController>().enabled = false;
                             Cursor.lockState = CursorLockMode.None;
+
+                            }
+                        else
+                        {
+
+                            gameEnd("You didn't get the bully by the end of the week");
+                        }
+                           
                         }
                         else
                         {
@@ -253,7 +269,7 @@ public class gameController : MonoBehaviour
                             teacher.Play();
                             teacher.loop = true;
 
-                    }
+                        }
 
                         
                         break;
@@ -311,7 +327,6 @@ public class gameController : MonoBehaviour
             parenttxt.gameObject.SetActive(true);
             hungerslider.gameObject.SetActive(true);
             hungertxt.gameObject.SetActive(true);
-            StartCoroutine(MyCouroutine());
             timer.gameObject.SetActive(true);
 
         }
@@ -341,12 +356,7 @@ public class gameController : MonoBehaviour
         if(player.gameObject.GetComponent<interacting>().person.gameObject != null)
             player.gameObject.GetComponent<interacting>().person.gameObject.GetComponent<positioning>().resetRotation();
     }
-     IEnumerator MyCouroutine()
-    {
-        yield return new WaitForSeconds(4f);
-        beginningText.gameObject.SetActive(false);
-
-    }
+ 
 
     public void recesstime()
     {
@@ -373,8 +383,11 @@ public class gameController : MonoBehaviour
     public void attack()
     {
         attackgoing = true;
-
-
+        bribebutton.SetActive(false);
+        cam.transform.LookAt(bully.transform);
+        screen.SetActive(false);
+        interactionScreen.SetActive(false);
+        closebutton.SetActive(false);
     }
     public void changeposition()
     {
