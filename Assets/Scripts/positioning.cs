@@ -8,9 +8,10 @@ public class positioning : MonoBehaviour
     public Transform recesspositon;
     public Transform classposition;
     private GameObject player;
-
+    public GameObject bully; 
     void Start()
     {
+        bully = gameController.instance.bully;
         player = gameController.instance.player;
         if (this.gameObject.tag == "bully")
         {
@@ -57,19 +58,20 @@ public class positioning : MonoBehaviour
         {
            
             this.transform.rotation = classposition.rotation;
-
+            bully.gameObject.GetComponent<NavMeshAgent>().enabled = false;
 
         }
         else if (gameController.instance.state == gameController.gamestate.lunchtime)
         {
           
             this.transform.rotation = lunchposition.rotation;
+            bully.gameObject.GetComponent<NavMeshAgent>().enabled = false;
         }
         else if (gameController.instance.state == gameController.gamestate.recess)
         {
          
             this.transform.rotation = recesspositon.rotation;
-
+            bully.gameObject.GetComponent<NavMeshAgent>().enabled = true;
 
         }
     }
