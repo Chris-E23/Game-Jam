@@ -13,11 +13,14 @@ public class AIController : MonoBehaviour
     public LayerMask bullylayer;
     public AudioSource bullydying;
     public GameObject NPCHandler;
+    Camera cam;
+
     void Start()
     {
         agent = this.gameObject.GetComponent<NavMeshAgent>();
         
         player = gameController.instance.player;
+        cam = Camera.main;
 
     }
 
@@ -34,8 +37,7 @@ public class AIController : MonoBehaviour
             this.GetComponent<NavMeshAgent>().enabled = true;
             moveToTarget();
         }
-       
-        if(NPCHandler.GetComponent<nameGenerator>().ganglist.Count >= 5 && gameController.instance.attackgoing)
+        else if(gameController.instance.attackgoing)
         {
             gangAttack();
 
@@ -76,12 +78,18 @@ public class AIController : MonoBehaviour
         agent.SetDestination(target.position);
 
         Ray ray = new Ray(touchplayerdirection.position, touchplayerdirection.forward);
+        gameController.instance.bully.GetComponent<AIController>().enabled = false;
+        gameController.instance.bully.GetComponent<NavMeshAgent>().enabled = false;
+        Cursor.lockState = CursorLockMode.None;
+        StartCoroutine(mycoroutine()); 
+      
 
-        if (Physics.Raycast(ray, out RaycastHit hit2, 2f, bullylayer))
-        {
+    }
 
-            bullydying.Play();
-            gameController.instance.winScreen.SetActive(true);
-        }
+    IEnumerator mycoroutine()
+    {
+        yield return new WaitForSeconds(8);
+        gameController.instance.winScreen.SetActive(true);
+        
     }
 }

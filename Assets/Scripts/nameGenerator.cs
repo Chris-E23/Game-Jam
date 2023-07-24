@@ -33,7 +33,7 @@ public class nameGenerator : MonoBehaviour
         names.Add("Billy");
         names.Add("Mika");
         names.Add("Jones");
-        names.Add("Billy");
+        names.Add("Dan");
         names.Add("Edwin");
         names.Add("Jolie");
         names.Add("Christina");

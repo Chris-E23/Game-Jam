@@ -217,7 +217,10 @@ public class interacting : MonoBehaviour
         else
         {
             bribebutton.gameObject.SetActive(false);
-
+            if(foodTrayHolder != null)
+            {
+                Destroy(foodTrayHolder);
+            }
         }
         
         if (person.gameObject.GetComponent<NPCStorage>().ingang == true)
