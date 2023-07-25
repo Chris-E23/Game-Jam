@@ -1,78 +1,88 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
-public class positioning : MonoBehaviour
+
+
+namespace CorruptElementary
 {
+
+    public class Positioning : MonoBehaviour
+    {
+    
+
     public Transform lunchposition;
     public Transform recesspositon;
     public Transform classposition;
     private GameObject player;
-    public GameObject bully; 
-    void Start()
-    {
-        bully = gameController.instance.bully;
-        player = gameController.instance.player;
-        if (this.gameObject.tag == "bully")
+    public GameObject bully;
+
+        void Start()
         {
-            this.gameObject.GetComponent<AIController>().enabled = true;
+            bully = GameController.instance.bully;
+            player = GameController.instance.player;
+            if (this.gameObject.tag == "bully")
+            {
+                player = GameController.instance.player;
+                if (this.gameObject.CompareTag("bully"))
+                {
+                    this.gameObject.GetComponent<AIController>().enabled = true;
+
+
+                }
+            }
+        }
+
+        void Update()
+        {
 
 
         }
-    }
 
-   
-    void Update()
-    {
-        
-       
-    }
-    public void changeposition()
-    {
-
-        if (gameController.instance.state == gameController.gamestate.classtime)
+        public void changeposition()
         {
-            this.transform.position = classposition.position;
-            this.transform.rotation = classposition.rotation;
-
-
-        }
-        else if (gameController.instance.state == gameController.gamestate.lunchtime)
-        {
-            this.transform.position = lunchposition.position;
-            this.transform.rotation = lunchposition.rotation;
-        }
-        else if (gameController.instance.state == gameController.gamestate.recess)
-        {
-            this.transform.position = recesspositon.position;
-            this.transform.rotation = recesspositon.rotation;
-            
-         
+            switch (GameController.instance.state)
+            {
+                case GameController.gamestate.classtime:
+                    this.transform.position = classposition.position;
+                    this.transform.rotation = classposition.rotation;
+                    break;
+                case GameController.gamestate.lunchtime:
+                    this.transform.position = lunchposition.position;
+                    this.transform.rotation = lunchposition.rotation;
+                    break;
+                case GameController.gamestate.recess:
+                    this.transform.position = recesspositon.position;
+                    this.transform.rotation = recesspositon.rotation;
+                    break;
+            }
         }
 
-    }
-
-    public void resetRotation()
-    {
-        if (gameController.instance.state == gameController.gamestate.classtime)
+        public void resetRotation()
         {
            
             this.transform.rotation = classposition.rotation;
             bully.gameObject.GetComponent<NavMeshAgent>().enabled = false;
 
-        }
-        else if (gameController.instance.state == gameController.gamestate.lunchtime)
-        {
-          
-            this.transform.rotation = lunchposition.rotation;
-            bully.gameObject.GetComponent<NavMeshAgent>().enabled = false;
-        }
-        else if (gameController.instance.state == gameController.gamestate.recess)
-        {
-         
-            this.transform.rotation = recesspositon.rotation;
-            bully.gameObject.GetComponent<NavMeshAgent>().enabled = true;
+            if (GameController.instance.state == GameController.gamestate.lunchtime)
+            {
+
+                this.transform.rotation = lunchposition.rotation;
+                bully.gameObject.GetComponent<NavMeshAgent>().enabled = false;
+            }
+            else if (GameController.instance.state == GameController.gamestate.recess)
+            {
+
+
+                this.transform.rotation = recesspositon.rotation;
+                bully.gameObject.GetComponent<NavMeshAgent>().enabled = true;
+            }
+
 
         }
+       
+
     }
+
 }
+
+
+
