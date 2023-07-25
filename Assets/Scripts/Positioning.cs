@@ -1,15 +1,17 @@
 using UnityEngine;
-
-namespace CorruptElementary
+using UnityEngine.AI;
+public class positioning : MonoBehaviour
 {
-    public class Positioning : MonoBehaviour
+    public Transform lunchposition;
+    public Transform recesspositon;
+    public Transform classposition;
+    private GameObject player;
+    public GameObject bully; 
+    void Start()
     {
-        public Transform lunchposition;
-        public Transform recesspositon;
-        public Transform classposition;
-        private GameObject _player;
-
-        void Start()
+        bully = gameController.instance.bully;
+        player = gameController.instance.player;
+        if (this.gameObject.tag == "bully")
         {
             _player = GameController.instance.player;
             if (this.gameObject.CompareTag("bully"))
@@ -48,14 +50,23 @@ namespace CorruptElementary
 
         public void resetRotation()
         {
-            var t = this.transform;
-            t.rotation = GameController.instance.state switch
-            {
-                GameController.gamestate.classtime => classposition.rotation,
-                GameController.gamestate.lunchtime => lunchposition.rotation,
-                GameController.gamestate.recess => recesspositon.rotation,
-                _ => t.rotation
-            };
+           
+            this.transform.rotation = classposition.rotation;
+            bully.gameObject.GetComponent<NavMeshAgent>().enabled = false;
+
+        }
+        else if (gameController.instance.state == gameController.gamestate.lunchtime)
+        {
+          
+            this.transform.rotation = lunchposition.rotation;
+            bully.gameObject.GetComponent<NavMeshAgent>().enabled = false;
+        }
+        else if (gameController.instance.state == gameController.gamestate.recess)
+        {
+         
+            this.transform.rotation = recesspositon.rotation;
+            bully.gameObject.GetComponent<NavMeshAgent>().enabled = true;
+
         }
     }
 
