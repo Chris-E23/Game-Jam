@@ -2,25 +2,45 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
-public class positioning : MonoBehaviour
+
+
+namespace CorruptElementary
 {
+
+    public class Positioning : MonoBehaviour
+    {
+    
+
     public Transform lunchposition;
     public Transform recesspositon;
     public Transform classposition;
     private GameObject player;
-    public GameObject bully; 
-    void Start()
-    {
-        bully = gameController.instance.bully;
-        player = gameController.instance.player;
-        if (this.gameObject.tag == "bully")
+    public GameObject bully;
+
+        void Start()
         {
+<<<<<<< HEAD
             this.gameObject.GetComponent<AIController>().enabled = true;
 
 
+=======
+            bully = GameController.instance.bully;
+            player = GameController.instance.player;
+            if (this.gameObject.tag == "bully")
+            {
+                player = GameController.instance.player;
+                if (this.gameObject.CompareTag("bully"))
+                {
+                    this.gameObject.GetComponent<AIController>().enabled = true;
+
+
+                }
+            }
+>>>>>>> 68b003a (cvgbnmhjyhftdjyhrfdtxmgjchm,)
         }
     }
 
+<<<<<<< HEAD
    
     void Update()
     {
@@ -31,6 +51,9 @@ public class positioning : MonoBehaviour
     {
 
         if (gameController.instance.state == gameController.gamestate.classtime)
+=======
+        void Update()
+>>>>>>> 68b003a (cvgbnmhjyhftdjyhrfdtxmgjchm,)
         {
             this.transform.position = classposition.position;
             this.transform.rotation = classposition.rotation;
@@ -60,19 +83,26 @@ public class positioning : MonoBehaviour
             this.transform.rotation = classposition.rotation;
             bully.gameObject.GetComponent<NavMeshAgent>().enabled = false;
 
-        }
-        else if (gameController.instance.state == gameController.gamestate.lunchtime)
-        {
-          
-            this.transform.rotation = lunchposition.rotation;
-            bully.gameObject.GetComponent<NavMeshAgent>().enabled = false;
-        }
-        else if (gameController.instance.state == gameController.gamestate.recess)
-        {
-         
-            this.transform.rotation = recesspositon.rotation;
-            bully.gameObject.GetComponent<NavMeshAgent>().enabled = true;
+            if (GameController.instance.state == GameController.gamestate.lunchtime)
+            {
+
+                this.transform.rotation = lunchposition.rotation;
+                bully.gameObject.GetComponent<NavMeshAgent>().enabled = false;
+            }
+            else if (GameController.instance.state == GameController.gamestate.recess)
+            {
+
+
+                this.transform.rotation = recesspositon.rotation;
+                bully.gameObject.GetComponent<NavMeshAgent>().enabled = true;
+            }
+
 
         }
+       
+
     }
 }
+
+
+
