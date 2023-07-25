@@ -368,8 +368,7 @@ namespace CorruptElementary
             parentsatis.gameObject.SetActive(true);
             hungerslider.gameObject.SetActive(true);
             if (player.gameObject.GetComponent<Interacting>().person.gameObject != null)
-                player.gameObject.GetComponent<Interacting>().person.gameObject.GetComponent<Positioning>()
-                    .resetRotation();
+                player.gameObject.GetComponent<Interacting>().person.gameObject.GetComponent<Positioning>().resetRotation();
         }
 
 
